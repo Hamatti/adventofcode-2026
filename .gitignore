@@ -1,0 +1,5 @@
+notes/
+*.pyc
+inputs/*.txt
+src/template.py
+__pycache__/
