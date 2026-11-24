@@ -1,10 +1,18 @@
 import os
 import sys
+from dataclasses import dataclass
 from itertools import cycle
-from collections import namedtuple
-from typing import List, Callable
+from pprint import pprint
+from typing import Any, List, Literal, Callable
 
-Coordinate = namedtuple("Coordinate", ["x", "y"])
+
+@dataclass
+class Coordinate:
+    x: int
+    y: int
+
+    def __hash__(self):
+        return hash(self.x) ^ hash(self.y)
 
 
 def read_input[T](
@@ -37,7 +45,7 @@ def read_input[T](
 
 
 def read_multisection_input[T](
-    day: int, map_fns: List[Callable[[str], T]] = None, example: bool = False
+    day: int, map_fns: List[Callable[[str], T]], example: bool = False
 ) -> List[T]:
     """
     Read multisection puzzle input for file `/inputs/day_{day}.txt'
@@ -67,11 +75,11 @@ def read_multisection_input[T](
         sys.exit(1)
 
 
-def create_grid(
+def create_grid[T](
     inputs: List[List[str]],
-    map_fn: Callable[[str], any] = lambda x: x,
+    map_fn: Callable[[str], T] = lambda x: x,
     predicate: Callable[[str], bool] = lambda x: True,
-):
+) -> dict[Coordinate, T]:
     """
     Turns a 2D list of lists into a dictionary with (x, y)
     coordinates as keys.
@@ -93,8 +101,38 @@ def create_grid(
     for y, row in enumerate(inputs):
         for x, cell in enumerate(row):
             if predicate(cell):
-                grid[Coordinate(x, y)] = map_fn(cell)
+                grid[Coordinate(x=x, y=y)] = map_fn(cell)
     return grid
+
+
+def debug(msg):
+    """
+    Better debug prints with pprint
+    """
+    pprint(msg)
+
+
+type AnsiColor = Literal["red"] | Literal["green"] | Literal["yellow"] | Literal[
+    "blue"
+] | Literal["purple"] | Literal["cyan"] | Literal["gray"] | Literal["black"]
+
+
+def print_color(msg, color: AnsiColor, **kwargs):
+    """
+    Print a message in provided color using ANSI color
+    codes.
+    """
+    COLORS = {
+        "red": "91",
+        "green": "92",
+        "yellow": "93",
+        "blue": "94",
+        "purple": "95",
+        "cyan": "96",
+        "gray": "97",
+        "black": "90",
+    }
+    print(f"\033[{COLORS[color]}m{msg}\033[00m", **kwargs)
 
 
 if __name__ == "__main__":
